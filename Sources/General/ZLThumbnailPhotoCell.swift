@@ -227,6 +227,7 @@ class ZLThumbnailPhotoCell: UICollectionViewCell {
                 editImageTag.isHidden = false
                 descLabel.text = ""
             } else {
+                descLabel.text = ""
                 bottomShadowView.isHidden = false
             }
         }
