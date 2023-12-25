@@ -16,38 +16,6 @@ extension ZLLanguageType {
             return "System"
         case .english:
             return "English"
-        case .chineseSimplified:
-            return "中文简体 (Chinese Simplified)"
-        case .chineseTraditional:
-            return "中文繁体 (Chinese Traditional)"
-        case .japanese:
-            return "日本語 (Japanese)"
-        case .french:
-            return "Français (French)"
-        case .german:
-            return "Deutsch (German)"
-        case .russian:
-            return "Pусский (Russian)"
-        case .vietnamese:
-            return "Tiếng Việt (Vietnamese)"
-        case .korean:
-            return "한국어 (Korean)"
-        case .malay:
-            return "Bahasa Melayu (Malay)"
-        case .italian:
-            return "Italiano (Italian)"
-        case .indonesian:
-            return "Bahasa Indonesia (Indonesian)"
-        case .portuguese:
-            return "Português (Portuguese)"
-        case .spanish:
-            return "Español (Spanish)"
-        case .turkish:
-            return "Türkçe (Turkish)"
-        case .arabic:
-            return "عربي (Arabic)"
-        case .dutch:
-            return "Nederlands (Dutch)"
         }
     }
     

@@ -144,17 +144,17 @@ class ZLEmbedAlbumListView: UIView {
     /// 这里不采用监听相册发生变化的方式，是因为每次变化，系统都会回调多次，造成重复获取相册列表
     func show(reloadAlbumList: Bool) {
         guard reloadAlbumList else {
-            animateShow()
+//            animateShow()
             return
         }
         
         if #available(iOS 14.0, *), PHPhotoLibrary.authorizationStatus(for: .readWrite) == .limited {
             loadAlbumList { [weak self] in
-                self?.animateShow()
+//                self?.animateShow()
             }
         } else {
             loadAlbumList()
-            animateShow()
+//            animateShow()
         }
     }
     

@@ -282,7 +282,7 @@ class ZLThumbnailViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         
-        let navViewNormalH: CGFloat = 44
+        let navViewNormalH: CGFloat = 90
         
         var insets = UIEdgeInsets(top: 20, left: 0, bottom: 0, right: 0)
         var collectionViewInsetTop: CGFloat = 20
@@ -319,7 +319,7 @@ class ZLThumbnailViewController: UIViewController {
 
         let scrollToBottomSize = 35.0
         let scrollToBottomX = view.zl.width - insets.right - scrollToBottomSize - 22
-        let scrollToBottomY = view.zl.height - insets.bottom - bottomViewH - scrollToBottomSize - 30
+        let scrollToBottomY = view.zl.height - insets.bottom - scrollToBottomSize - 30
         scrollToBottomBtn.frame = CGRect(
             origin: CGPoint(x: scrollToBottomX, y: scrollToBottomY),
             size: CGSize(width: scrollToBottomSize, height: scrollToBottomSize)
@@ -390,30 +390,30 @@ class ZLThumbnailViewController: UIViewController {
         view.backgroundColor = .zl.thumbnailBgColor
         
         view.addSubview(collectionView)
-        view.addSubview(bottomView)
+//        view.addSubview(bottomView)
         view.addSubview(scrollToBottomBtn)
         
         if let effect = ZLPhotoUIConfiguration.default().bottomViewBlurEffectOfAlbumList {
             bottomBlurView = UIVisualEffectView(effect: effect)
-            bottomView.addSubview(bottomBlurView!)
+//            bottomView.addSubview(bottomBlurView!)
         }
         
         if showLimitAuthTipsView {
             limitAuthTipsView = ZLLimitedAuthorityTipsView(frame: CGRect(x: 0, y: 0, width: view.bounds.width, height: ZLLimitedAuthorityTipsView.height))
-            bottomView.addSubview(limitAuthTipsView!)
+//            bottomView.addSubview(limitAuthTipsView!)
         }
         
-        bottomView.addSubview(previewBtn)
-        bottomView.addSubview(originalBtn)
-        bottomView.addSubview(originalLabel)
-        bottomView.addSubview(doneBtn)
+//        bottomView.addSubview(previewBtn)
+//        bottomView.addSubview(originalBtn)
+//        bottomView.addSubview(originalLabel)
+//        bottomView.addSubview(doneBtn)
         
         setupNavView()
     }
     
     private func setupNavView() {
         if ZLPhotoUIConfiguration.default().style == .embedAlbumList {
-            embedNavView = ZLEmbedAlbumListNavView(title: albumList.title)
+            embedNavView = ZLEmbedAlbumListNavView(title: "Add to story")
             
             embedNavView?.selectAlbumBlock = { [weak self] in
                 if self?.embedAlbumListView?.isHidden == true {
@@ -428,6 +428,19 @@ class ZLThumbnailViewController: UIViewController {
                 let nav = self?.navigationController as? ZLImageNavController
                 nav?.dismiss(animated: true, completion: {
                     nav?.cancelBlock?()
+                })
+            }
+            
+            embedNavView?.doneBlock = { [self] in
+                let nav = self.navigationController as? ZLImageNavController
+                nav?.dismiss(animated: true, completion: {
+                    if let block = ZLPhotoConfiguration.default().operateBeforeDoneAction {
+                        block(self) { [weak nav] in
+                            nav?.selectImageBlock?()
+                        }
+                    } else {
+                        nav?.selectImageBlock?()
+                    }
                 })
             }
             
@@ -868,6 +881,8 @@ class ZLThumbnailViewController: UIViewController {
     
     private func refreshDoneBtnFrame() {
         let selCount = (navigationController as? ZLImageNavController)?.arrSelectedModels.count ?? 0
+        embedNavView?.selectionCountlbl.text = "\(selCount)/5"
+        
         var doneTitle = localLanguageTextValue(.done)
         if ZLPhotoConfiguration.default().showSelectCountOnDoneBtn, selCount > 0 {
             doneTitle += "(" + String(selCount) + ")"
@@ -1154,7 +1169,7 @@ extension ZLThumbnailViewController: UICollectionViewDataSource, UICollectionVie
         
         let totalW = collectionView.bounds.width - CGFloat(columnCount - 1) * uiConfig.minimumInteritemSpacing
         let singleW = totalW / CGFloat(columnCount)
-        return CGSize(width: singleW, height: singleW)
+        return CGSize(width: singleW, height: singleW * 2)
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -1303,14 +1318,15 @@ extension ZLThumbnailViewController: UICollectionViewDataSource, UICollectionVie
         if shouldDirectEdit(m) {
             return
         }
+        cell.btnSelectClick()
         
-        let vc = ZLPhotoPreviewController(photos: arrDataSources, index: index)
-        vc.backBlock = { [weak self] in
-            guard let `self` = self, self.hiddenStatusBar else { return }
-            self.hiddenStatusBar = false
-            self.setNeedsStatusBarAppearanceUpdate()
-        }
-        show(vc, sender: nil)
+//        let vc = ZLPhotoPreviewController(photos: arrDataSources, index: index)
+//        vc.backBlock = { [weak self] in
+//            guard let `self` = self, self.hiddenStatusBar else { return }
+//            self.hiddenStatusBar = false
+//            self.setNeedsStatusBarAppearanceUpdate()
+//        }
+//        show(vc, sender: nil)
     }
     
     private func shouldDirectEdit(_ model: ZLPhotoModel) -> Bool {
@@ -1399,6 +1415,7 @@ extension ZLThumbnailViewController: UICollectionViewDataSource, UICollectionVie
     private func setCellMaskView(_ cell: ZLThumbnailPhotoCell, isSelected: Bool, model: ZLPhotoModel) {
         cell.coverView.isHidden = true
         cell.enableSelect = true
+        cell.btnSelect.isEnabled = true
         let arrSel = (navigationController as? ZLImageNavController)?.arrSelectedModels ?? []
         let config = ZLPhotoConfiguration.default()
         let uiConfig = ZLPhotoUIConfiguration.default()
@@ -1418,20 +1435,24 @@ extension ZLThumbnailViewController: UICollectionViewDataSource, UICollectionVie
                         cell.coverView.backgroundColor = .zl.invalidMaskColor
                         cell.coverView.isHidden = !uiConfig.showInvalidMask
                         cell.enableSelect = false
+                        cell.btnSelect.isEnabled = false
                     } else if (config.maxSelectCount - selCount) <= (config.minVideoSelectCount - videoCount), model.type != .video {
                         cell.coverView.backgroundColor = .zl.invalidMaskColor
                         cell.coverView.isHidden = !uiConfig.showInvalidMask
                         cell.enableSelect = false
+                        cell.btnSelect.isEnabled = false
                     }
                 } else if selCount > 0 {
                     cell.coverView.backgroundColor = .zl.invalidMaskColor
                     cell.coverView.isHidden = (!uiConfig.showInvalidMask || model.type != .video)
                     cell.enableSelect = model.type != .video
+                    cell.btnSelect.isEnabled = false
                 }
             } else if selCount >= config.maxSelectCount {
                 cell.coverView.backgroundColor = .zl.invalidMaskColor
                 cell.coverView.isHidden = !uiConfig.showInvalidMask
                 cell.enableSelect = false
+                cell.btnSelect.isEnabled = false
             }
             if uiConfig.showSelectedBorder {
                 cell.layer.borderWidth = 0
@@ -1525,7 +1546,7 @@ class ZLEmbedAlbumListNavView: UIView {
     
     private lazy var titleBgControl: UIControl = {
         let control = UIControl()
-        control.backgroundColor = .zl.navEmbedTitleViewBgColor
+        control.backgroundColor = .clear
         control.layer.cornerRadius = ZLEmbedAlbumListNavView.titleViewH / 2
         control.layer.masksToBounds = true
         control.addTarget(self, action: #selector(titleBgControlClick), for: .touchUpInside)
@@ -1541,11 +1562,27 @@ class ZLEmbedAlbumListNavView: UIView {
         return label
     }()
     
-    private lazy var arrow: UIImageView = {
-        let view = UIImageView(image: .zl.getImage("zl_downArrow"))
-        view.clipsToBounds = true
-        view.contentMode = .scaleAspectFill
-        return view
+//    private lazy var arrow: UIImageView = {
+//        let view = UIImageView(image: .zl.getImage("zl_downArrow"))
+//        view.clipsToBounds = true
+//        view.contentMode = .scaleAspectFill
+//        return view
+//    }()
+    
+    private lazy var doneBtn: UIButton = {
+        let btn = createBtn(localLanguageTextValue(.next), #selector(doneBtnClick), true)
+        btn.layer.masksToBounds = true
+        btn.layer.cornerRadius = 15
+        return btn
+    }()
+    
+    var selectionCountlbl: UILabel = {
+        let label = UILabel()
+        label.textColor = .zl.navTitleColor
+        label.font = ZLLayout.navTitleFont
+        label.text = "0/5"
+        label.textAlignment = .right
+        return label
     }()
     
     private lazy var cancelBtn: UIButton = {
@@ -1571,6 +1608,8 @@ class ZLEmbedAlbumListNavView: UIView {
     var selectAlbumBlock: (() -> Void)?
     
     var cancelBlock: (() -> Void)?
+    
+    var doneBlock: (() -> Void)?
     
     init(title: String) {
         self.title = title
@@ -1598,6 +1637,33 @@ class ZLEmbedAlbumListNavView: UIView {
         } else {
             cancelBtn.frame = CGRect(x: insets.left + 10, y: insets.top, width: 44, height: 44)
         }
+        
+        let doneBtnW = (doneBtn.titleLabel?.text?.zl.boundingRect(font: ZLLayout.navTitleFont, limitSize: CGSize(width: CGFloat.greatestFiniteMagnitude, height: 30)).width ?? 60) + 20
+        doneBtn.frame = CGRect(x: UIScreen.main.bounds.width - doneBtnW - 15, y: insets.top + 7, width: doneBtnW, height: 30)
+        
+        let selectionLblW: CGFloat = 70
+        selectionCountlbl.frame = CGRect(x: UIScreen.main.bounds.width - selectionLblW - 15, y: 50 + insets.top + 8, width: selectionLblW, height: 20)
+    }
+    
+    private func createBtn(_ title: String, _ action: Selector, _ isDone: Bool = false) -> UIButton {
+        let btn = UIButton(type: .custom)
+        btn.titleLabel?.font = .zl.font(ofSize: 14)
+        btn.setTitle(title, for: .normal)
+        btn.backgroundColor = .zl.bottomToolViewBtnNormalBgColor
+        btn.setTitleColor(isDone ? .zl.bottomToolViewDoneBtnNormalTitleColor : .zl.bottomToolViewBtnNormalTitleColor, for: .normal)
+        btn.addTarget(self, action: action, for: .touchUpInside)
+        return btn
+    }
+    
+    @objc private func doneBtnClick() {
+        print("******* Done Button Clicked *******")
+        doneBlock?()
+//        let nav = navigationController as? ZLImageNavController
+//        if let block = ZLPhotoConfiguration.default().operateBeforeDoneAction {
+//            nav?.selectImageBlock?()
+//        } else {
+//            nav?.selectImageBlock?()
+//        }
     }
     
     private func refreshTitleViewFrame() {
@@ -1615,7 +1681,7 @@ class ZLEmbedAlbumListNavView: UIView {
                 limitSize: CGSize(width: CGFloat.greatestFiniteMagnitude, height: 44)
             ).width
         )
-        let titleBgControlW = albumTitleW + ZLEmbedAlbumListNavView.arrowH + 20
+        let titleBgControlW = albumTitleW + 20
         
         UIView.animate(withDuration: 0.25) {
             self.titleBgControl.frame = CGRect(
@@ -1625,12 +1691,12 @@ class ZLEmbedAlbumListNavView: UIView {
                 height: ZLEmbedAlbumListNavView.titleViewH
             )
             self.albumTitleLabel.frame = CGRect(x: 10, y: 0, width: albumTitleW, height: ZLEmbedAlbumListNavView.titleViewH)
-            self.arrow.frame = CGRect(
-                x: self.albumTitleLabel.frame.maxX + 5,
-                y: (ZLEmbedAlbumListNavView.titleViewH - ZLEmbedAlbumListNavView.arrowH) / 2.0,
-                width: ZLEmbedAlbumListNavView.arrowH,
-                height: ZLEmbedAlbumListNavView.arrowH
-            )
+//            self.arrow.frame = CGRect(
+//                x: self.albumTitleLabel.frame.maxX + 5,
+//                y: (ZLEmbedAlbumListNavView.titleViewH - ZLEmbedAlbumListNavView.arrowH) / 2.0,
+//                width: ZLEmbedAlbumListNavView.arrowH,
+//                height: ZLEmbedAlbumListNavView.arrowH
+//            )
         }
     }
     
@@ -1644,21 +1710,23 @@ class ZLEmbedAlbumListNavView: UIView {
         
         addSubview(titleBgControl)
         titleBgControl.addSubview(albumTitleLabel)
-        titleBgControl.addSubview(arrow)
+//        titleBgControl.addSubview(arrow)
+        addSubview(doneBtn)
+        addSubview(selectionCountlbl)
         addSubview(cancelBtn)
     }
     
     @objc private func titleBgControlClick() {
         selectAlbumBlock?()
-        if arrow.transform == .identity {
-            UIView.animate(withDuration: 0.25) {
-                self.arrow.transform = CGAffineTransform(rotationAngle: .pi)
-            }
-        } else {
-            UIView.animate(withDuration: 0.25) {
-                self.arrow.transform = .identity
-            }
-        }
+//        if arrow.transform == .identity {
+//            UIView.animate(withDuration: 0.25) {
+//                self.arrow.transform = CGAffineTransform(rotationAngle: .pi)
+//            }
+//        } else {
+//            UIView.animate(withDuration: 0.25) {
+//                self.arrow.transform = .identity
+//            }
+//        }
     }
     
     @objc private func cancelBtnClick() {
@@ -1667,7 +1735,7 @@ class ZLEmbedAlbumListNavView: UIView {
     
     func reset() {
         UIView.animate(withDuration: 0.25) {
-            self.arrow.transform = .identity
+//            self.arrow.transform = .identity
         }
     }
 }
