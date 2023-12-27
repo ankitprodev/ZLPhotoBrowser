@@ -46,6 +46,8 @@ public class ZLPhotoModel: NSObject {
     
     public var duration = ""
     
+    public var image: UIImage? = nil
+    
     public var isSelected = false
     
     private var pri_dataSize: ZLPhotoConfiguration.KBUnit?
@@ -111,6 +113,25 @@ public class ZLPhotoModel: NSObject {
         type = transformAssetType(for: asset)
         if type == .video {
             duration = transformDuration(for: asset)
+        }
+        getImageFromPHAsset(phAsset: asset) { img in
+            self.image = img
+        }
+    }
+    
+    public func getImageFromPHAsset(phAsset: PHAsset, completion: @escaping (UIImage?) -> Void) {
+        let imageManager = PHImageManager.default()
+
+        // Define options for retrieving the image
+        let requestOptions = PHImageRequestOptions()
+        requestOptions.isSynchronous = false
+        requestOptions.deliveryMode = .highQualityFormat
+
+        // Request the image data for the PHAsset
+        imageManager.requestImage(for: phAsset, targetSize: CGSize(width: 300, height: 300), contentMode: .aspectFit, options: requestOptions) { (image, info) in
+            DispatchQueue.main.async {
+                completion(image)
+            }
         }
     }
     
