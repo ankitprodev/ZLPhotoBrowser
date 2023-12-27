@@ -48,6 +48,8 @@ public class ZLPhotoModel: NSObject {
     
     public var image: UIImage? = nil
     
+    public var videoUrl: URL? = nil
+    
     public var isSelected = false
     
     private var pri_dataSize: ZLPhotoConfiguration.KBUnit?
@@ -116,6 +118,24 @@ public class ZLPhotoModel: NSObject {
         }
         getImageFromPHAsset(phAsset: asset) { img in
             self.image = img
+        }
+        getVideoURL(for: asset) { url in
+            self.videoUrl = url
+        }
+    }
+    
+    public func getVideoURL(for asset: PHAsset, completion: @escaping (URL?) -> Void) {
+        let options = PHVideoRequestOptions()
+        options.version = .original
+
+        PHImageManager.default().requestAVAsset(forVideo: asset, options: options) { (avAsset, _, _) in
+            guard let avAsset = avAsset as? AVURLAsset else {
+                completion(nil)
+                return
+            }
+
+            let videoURL = avAsset.url
+            completion(videoURL)
         }
     }
     
