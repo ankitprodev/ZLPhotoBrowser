@@ -129,13 +129,37 @@ public class ZLPhotoModel: NSObject {
         options.version = .original
 
         PHImageManager.default().requestAVAsset(forVideo: asset, options: options) { (avAsset, _, _) in
-            guard let avAsset = avAsset as? AVURLAsset else {
+            guard let avAsset = avAsset else {
                 completion(nil)
                 return
             }
 
-            let videoURL = avAsset.url
-            completion(videoURL)
+            if let urlAsset = avAsset as? AVURLAsset {
+                // If it's already an AVURLAsset, use its URL directly
+                let videoURL = urlAsset.url
+                completion(videoURL)
+            } else {
+                // If it's not an AVURLAsset, export it to a temporary file
+                let temporaryDirectoryURL = FileManager.default.temporaryDirectory
+                let uniqueFilename = ProcessInfo.processInfo.globallyUniqueString
+                let temporaryFileURL = temporaryDirectoryURL.appendingPathComponent("\(uniqueFilename).mov")
+
+                do {
+                    let exporter = AVAssetExportSession(asset: avAsset, presetName: AVAssetExportPresetHighestQuality)
+                    exporter?.outputFileType = AVFileType.mov
+                    exporter?.outputURL = temporaryFileURL
+
+                    exporter?.exportAsynchronously {
+                        if exporter?.status == .completed {
+                            completion(temporaryFileURL)
+                        } else {
+                            completion(nil)
+                        }
+                    }
+                } catch {
+                    completion(nil)
+                }
+            }
         }
     }
     
