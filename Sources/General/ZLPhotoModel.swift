@@ -172,7 +172,7 @@ public class ZLPhotoModel: NSObject {
         requestOptions.deliveryMode = .highQualityFormat
 
         // Request the image data for the PHAsset
-        imageManager.requestImage(for: phAsset, targetSize: CGSize(width: 300, height: 300), contentMode: .aspectFit, options: requestOptions) { (image, info) in
+        imageManager.requestImage(for: phAsset, targetSize: PHImageManagerMaximumSize, contentMode: .aspectFit, options: requestOptions) { (image, info) in
             DispatchQueue.main.async {
                 completion(image)
             }
