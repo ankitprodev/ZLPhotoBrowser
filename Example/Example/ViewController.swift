@@ -164,19 +164,26 @@ class ViewController: UIViewController {
 //            .navViewBlurEffectOfAlbumList(nil)
 //            .indexLabelBgColor(.black)
 //            .indexLabelTextColor(.white)
+            .navBarColor(.black)
+            .thumbnailBgColor(.black)
+            .navViewBlurEffectOfAlbumList(nil)
+            .showIndexOnSelectBtn(true)
             .minimumInteritemSpacing(minItemSpacing)
             .minimumLineSpacing(minLineSpacing)
-            .columnCountBlock { Int(ceil($0 / (428.0 / 4))) }
+            .columnCountBlock { Int(ceil($0 / (428.0 / 3))) }
             .showScrollToBottomBtn(true)
+            .sortAscending(false)
             
-        if ZLPhotoUIConfiguration.default().languageType == .arabic {
-            UIView.appearance().semanticContentAttribute = .forceRightToLeft
-        } else {
-            UIView.appearance().semanticContentAttribute = .unspecified
-        }
+        UIView.appearance().semanticContentAttribute = .unspecified
         
         // Custom image editor
         ZLPhotoConfiguration.default()
+            .allowSlideSelect(false)
+            .allowSelectOriginal(false)
+            .allowTakePhotoInLibrary(false)
+            .maxSelectCount(5)
+            .maxVideoSelectCount(2)
+            .showPreviewButtonInAlbum(false)
             .editImageConfiguration
             .imageStickerContainerView(ImageStickerContainerView())
 //            .tools([.draw, .clip, .mosaic, .filter])

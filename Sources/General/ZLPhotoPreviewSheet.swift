@@ -561,7 +561,7 @@ public class ZLPhotoPreviewSheet: UIView {
         guard !arrSelectedModels.isEmpty else {
             selectImageBlock?([], isSelectOriginal)
             hide()
-            viewController?.dismiss(animated: true, completion: nil)
+            viewController?.dismiss(animated: false, completion: nil)
             return
         }
         
@@ -601,7 +601,7 @@ public class ZLPhotoPreviewSheet: UIView {
             }
             
             if let vc = viewController {
-                vc.dismiss(animated: true) {
+                vc.dismiss(animated: false) {
                     call()
                     self?.hide()
                 }

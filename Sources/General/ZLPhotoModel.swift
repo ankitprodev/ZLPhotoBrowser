@@ -46,6 +46,10 @@ public class ZLPhotoModel: NSObject {
     
     public var duration = ""
     
+    public var image: UIImage? = nil
+    
+    public var videoUrl: URL? = nil
+    
     public var isSelected = false
     
     private var pri_dataSize: ZLPhotoConfiguration.KBUnit?
@@ -111,6 +115,67 @@ public class ZLPhotoModel: NSObject {
         type = transformAssetType(for: asset)
         if type == .video {
             duration = transformDuration(for: asset)
+        }
+        getImageFromPHAsset(phAsset: asset) { img in
+            self.image = img
+        }
+        getVideoURL(for: asset) { url in
+            self.videoUrl = url
+        }
+    }
+    
+    public func getVideoURL(for asset: PHAsset, completion: @escaping (URL?) -> Void) {
+        let options = PHVideoRequestOptions()
+        options.version = .original
+
+        PHImageManager.default().requestAVAsset(forVideo: asset, options: options) { (avAsset, _, _) in
+            guard let avAsset = avAsset else {
+                completion(nil)
+                return
+            }
+
+            if let urlAsset = avAsset as? AVURLAsset {
+                // If it's already an AVURLAsset, use its URL directly
+                let videoURL = urlAsset.url
+                completion(videoURL)
+            } else {
+                // If it's not an AVURLAsset, export it to a temporary file
+                let temporaryDirectoryURL = FileManager.default.temporaryDirectory
+                let uniqueFilename = ProcessInfo.processInfo.globallyUniqueString
+                let temporaryFileURL = temporaryDirectoryURL.appendingPathComponent("\(uniqueFilename).mov")
+
+                do {
+                    let exporter = AVAssetExportSession(asset: avAsset, presetName: AVAssetExportPresetHighestQuality)
+                    exporter?.outputFileType = AVFileType.mov
+                    exporter?.outputURL = temporaryFileURL
+
+                    exporter?.exportAsynchronously {
+                        if exporter?.status == .completed {
+                            completion(temporaryFileURL)
+                        } else {
+                            completion(nil)
+                        }
+                    }
+                } catch {
+                    completion(nil)
+                }
+            }
+        }
+    }
+    
+    public func getImageFromPHAsset(phAsset: PHAsset, completion: @escaping (UIImage?) -> Void) {
+        let imageManager = PHImageManager.default()
+
+        // Define options for retrieving the image
+        let requestOptions = PHImageRequestOptions()
+        requestOptions.isSynchronous = false
+        requestOptions.deliveryMode = .highQualityFormat
+
+        // Request the image data for the PHAsset
+        imageManager.requestImage(for: phAsset, targetSize: PHImageManagerMaximumSize, contentMode: .aspectFit, options: requestOptions) { (image, info) in
+            DispatchQueue.main.async {
+                completion(image)
+            }
         }
     }
     

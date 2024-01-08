@@ -85,13 +85,11 @@ class ZLThumbnailPhotoCell: UICollectionViewCell {
     
     lazy var indexLabel: UILabel = {
         let label = UILabel()
-        label.textColor = .zl.indexLabelTextColor
-        label.backgroundColor = .zl.indexLabelBgColor
+        label.textColor = .white
+//        label.backgroundColor = .zl.indexLabelBgColor
         if ZLPhotoUIConfiguration.default().showIndexOnSelectBtn {
-            label.font = .zl.font(ofSize: 14)
+            label.font = .zl.font(ofSize: 14, bold: true)
             label.textAlignment = .center
-            label.layer.cornerRadius = selectBtnWH / 2
-            label.layer.masksToBounds = true
         } else {
             label.font = .zl.font(ofSize: 14, bold: true)
             label.textAlignment = .left
@@ -139,13 +137,13 @@ class ZLThumbnailPhotoCell: UICollectionViewCell {
         contentView.addSubview(imageView)
         contentView.addSubview(coverView)
         contentView.addSubview(containerView)
-        containerView.addSubview(btnSelect)
-        containerView.addSubview(indexLabel)
         containerView.addSubview(bottomShadowView)
-        bottomShadowView.addSubview(videoTag)
-        bottomShadowView.addSubview(livePhotoTag)
-        bottomShadowView.addSubview(editImageTag)
-        bottomShadowView.addSubview(descLabel)
+//        bottomShadowView.addSubview(videoTag)
+        bottomShadowView.addSubview(btnSelect)
+        bottomShadowView.addSubview(indexLabel)
+//        bottomShadowView.addSubview(livePhotoTag)
+//        bottomShadowView.addSubview(editImageTag)
+        containerView.addSubview(descLabel)
         containerView.addSubview(progressView)
         
         if ZLPhotoUIConfiguration.default().showSelectedBorder {
@@ -160,7 +158,7 @@ class ZLThumbnailPhotoCell: UICollectionViewCell {
         
         containerView.frame = bounds
         coverView.frame = bounds
-        btnSelect.frame = CGRect(x: bounds.width - 32, y: 8, width: selectBtnWH, height: selectBtnWH)
+        btnSelect.frame = CGRect(x: 5, y: -8, width: selectBtnWH, height: selectBtnWH)
         if ZLPhotoUIConfiguration.default().showIndexOnSelectBtn {
             indexLabel.frame = btnSelect.frame
         } else {
@@ -171,7 +169,7 @@ class ZLThumbnailPhotoCell: UICollectionViewCell {
         videoTag.frame = CGRect(x: 5, y: 1, width: 20, height: 15)
         livePhotoTag.frame = CGRect(x: 5, y: -1, width: 20, height: 20)
         editImageTag.frame = CGRect(x: 5, y: -1, width: 20, height: 20)
-        descLabel.frame = CGRect(x: 30, y: 1, width: bounds.width - 35, height: 17)
+        descLabel.frame = CGRect(x: 30, y: 8, width: bounds.width - 35, height: 17)
         progressView.frame = CGRect(x: (bounds.width - 20) / 2, y: (bounds.height - 20) / 2, width: 20, height: 20)
     }
     
@@ -216,11 +214,11 @@ class ZLThumbnailPhotoCell: UICollectionViewCell {
             editImageTag.isHidden = true
             descLabel.text = "GIF"
         } else if model.type == .livePhoto {
-            bottomShadowView.isHidden = !config.allowSelectLivePhoto
+            bottomShadowView.isHidden = false
             videoTag.isHidden = true
             livePhotoTag.isHidden = false
             editImageTag.isHidden = true
-            descLabel.text = "Live"
+            descLabel.text = "∞"
         } else {
             if let _ = model.editImage {
                 bottomShadowView.isHidden = false
@@ -229,7 +227,8 @@ class ZLThumbnailPhotoCell: UICollectionViewCell {
                 editImageTag.isHidden = false
                 descLabel.text = ""
             } else {
-                bottomShadowView.isHidden = true
+                descLabel.text = ""
+                bottomShadowView.isHidden = false
             }
         }
         
