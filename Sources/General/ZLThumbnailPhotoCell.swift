@@ -214,11 +214,11 @@ class ZLThumbnailPhotoCell: UICollectionViewCell {
             editImageTag.isHidden = true
             descLabel.text = "GIF"
         } else if model.type == .livePhoto {
-            bottomShadowView.isHidden = !config.allowSelectLivePhoto
+            bottomShadowView.isHidden = false
             videoTag.isHidden = true
             livePhotoTag.isHidden = false
             editImageTag.isHidden = true
-            descLabel.text = "Live"
+            descLabel.text = "∞"
         } else {
             if let _ = model.editImage {
                 bottomShadowView.isHidden = false
